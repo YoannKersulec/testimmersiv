@@ -19,6 +19,7 @@ scenecore = "1.0.0-alpha04"
 media3Exoplayer = "1.8.0"
 media3Ui = "1.8.0"
 media3ExoplayerHls = "1.8.0"
+core = "1.17.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -47,6 +48,7 @@ androidx-scenecore = { group = "androidx.xr.scenecore", name = "scenecore", vers
 androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3Exoplayer" }
 androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3Ui" }
 androidx-media3-exoplayer-hls = { group = "androidx.media3", name = "media3-exoplayer-hls", version.ref = "media3ExoplayerHls" }
+core = { group = "com.google.ar.sceneform", name = "core", version.ref = "core" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

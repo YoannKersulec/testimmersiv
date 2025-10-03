@@ -56,7 +56,7 @@ fun HomeView(viewModel: MainViewModel, onClick : (String) -> Unit) {
                 items(state.vids) { vid ->
                     Card(
                         modifier = Modifier
-                            .fillMaxWidth(0.5f)
+                            .fillMaxWidth()
                             .padding(vertical = 8.dp)
                             .clickable(true, onClick = {
                                 onClick.invoke(vid.url)
