@@ -1,6 +1,7 @@
 package com.example.testimmersiv
 
 import android.annotation.SuppressLint
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -74,7 +75,6 @@ import androidx.xr.compose.subspace.layout.movable
 import androidx.xr.compose.subspace.layout.padding
 import androidx.xr.compose.subspace.layout.resizable
 import androidx.xr.compose.subspace.layout.width
-import com.example.testimmersiv.player.PlayerActivity
 import com.example.testimmersiv.ui.theme.TestimmersivTheme
 import com.example.testimmersiv.ui.theme.view.HomeView
 import com.example.testimmersiv.ui.theme.view.MainViewModel
@@ -126,6 +126,7 @@ class MainActivity : ComponentActivity() {
 
 
 
+    @SuppressLint("QueryPermissionsNeeded")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -144,10 +145,18 @@ class MainActivity : ComponentActivity() {
                 val spatialConfiguration = LocalSpatialConfiguration.current
 
                 val clickOnVid : (String) -> Unit = { url ->
-                    ChangeUrlAndPlay("https://hls-video-samples.r2.immersiv.cloud/bbb/master.m3u8")
+
+                    val intent = Intent()
+                    intent.component =
+                        ComponentName("com.example.testimmersiv_player",
+                            "com.example.testimmersiv_player.PlayerActivity")
+                    intent.action = Intent.ACTION_SEND
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    intent.putExtra(Intent.EXTRA_TEXT, url)
+                    intent.setType("text/plain")
+                    if (intent.resolveActivity(packageManager) != null)
+                        startActivity(intent)
                 }
-                Log.e("Main", "Check capa")
-                Log.e("Main", "Spatial ${LocalSpatialCapabilities.current.isSpatialUiEnabled}")
 
                 if (LocalSpatialCapabilities.current.isSpatialUiEnabled) {
                     Subspace {
@@ -187,7 +196,7 @@ class MainActivity : ComponentActivity() {
             }
             Spacer(Modifier.width(16.dp))
             Surface(Modifier.clip(RoundedCornerShape(16.dp))) {
-                PlayerScreen()
+                //PlayerScreen() // TODO
             }
         }
     }
