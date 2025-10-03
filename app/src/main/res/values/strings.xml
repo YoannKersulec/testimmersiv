@@ -3,4 +3,5 @@
     <string name="hello_android_xr">Hello Android XR.</string>
     <string name="switch_to_home_space_mode">Switch to Home Space Mode</string>
     <string name="switch_to_full_space_mode">Switch to Full Space Mode</string>
+    <string name="home_title_right_part">Click on any item to see content</string>
 </resources>

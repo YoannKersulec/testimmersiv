@@ -17,10 +17,12 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -39,8 +41,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -83,44 +87,17 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
-    private var player: ExoPlayer? = null
-
-    override fun onDestroy() {
-        super.onDestroy()
-        player?.release()
-    }
-
-    @OptIn(UnstableApi::class)
-    @Composable
-    fun PlayerScreen() {
-        // Crée le player et prépare le flux
-        player?.prepare()
-        // Intégration du PlayerView dans Compose
-        AndroidView(
-            factory = { ctx ->
-                PlayerView(ctx).apply {
-                    player = this@MainActivity.player
-                    layoutParams = FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT
-                    )
-                }
-            },
-            modifier = Modifier
-                .fillMaxSize()
-        )
-    }
-
-    @OptIn(UnstableApi::class)
-    fun ChangeUrlAndPlay(url : String) {
-        player?.stop()
-        val hlsDataSourceFactory = DefaultHttpDataSource.Factory()
-        val uri = Uri.Builder().encodedPath(url).build()
-        val hlsMediaItem = MediaItem.Builder().setUri(uri).build()
-        val mediaSource =
-            HlsMediaSource.Factory(hlsDataSourceFactory).createMediaSource(hlsMediaItem)
-        player?.setMediaSource(mediaSource)
-        player?.play()
+    private fun onClickVids(url: String) {
+        val intent = Intent()
+        intent.component =
+            ComponentName("com.example.testimmersiv_player",
+                "com.example.testimmersiv_player.PlayerActivity")
+        intent.action = Intent.ACTION_SEND
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        intent.putExtra(Intent.EXTRA_TEXT, url)
+        intent.setType("text/plain")
+        if (intent.resolveActivity(packageManager) != null)
+            startActivity(intent)
     }
 
 
@@ -130,7 +107,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        player = ExoPlayer.Builder(this).build()
 
         setContent {
             TestimmersivTheme {
@@ -145,17 +121,7 @@ class MainActivity : ComponentActivity() {
                 val spatialConfiguration = LocalSpatialConfiguration.current
 
                 val clickOnVid : (String) -> Unit = { url ->
-
-                    val intent = Intent()
-                    intent.component =
-                        ComponentName("com.example.testimmersiv_player",
-                            "com.example.testimmersiv_player.PlayerActivity")
-                    intent.action = Intent.ACTION_SEND
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    intent.putExtra(Intent.EXTRA_TEXT, url)
-                    intent.setType("text/plain")
-                    if (intent.resolveActivity(packageManager) != null)
-                        startActivity(intent)
+                    onClickVids(url)
                 }
 
                 if (LocalSpatialCapabilities.current.isSpatialUiEnabled) {
@@ -179,11 +145,11 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun WindowManager(onRequestFullSpaceMode: () -> Unit, viewModel: MainViewModel, onClick: (String) -> Unit) {
-        Row(Modifier) {
+        Row(Modifier.background(colorResource(R.color.bg_gradient)).fillMaxWidth()) {
             Surface(
                 Modifier
                     .background(Color.Transparent)
-                    .width(400.dp)
+                    .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
             ) {
                 Column {
@@ -193,10 +159,6 @@ class MainActivity : ComponentActivity() {
                         onClick = onClick
                     )
                 }
-            }
-            Spacer(Modifier.width(16.dp))
-            Surface(Modifier.clip(RoundedCornerShape(16.dp))) {
-                //PlayerScreen() // TODO
             }
         }
     }
