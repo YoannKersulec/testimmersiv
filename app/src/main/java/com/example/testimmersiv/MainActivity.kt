@@ -24,6 +24,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.xr.compose.platform.LocalHasXrSpatialFeature
 import androidx.xr.compose.platform.LocalSpatialCapabilities
 import androidx.xr.compose.platform.LocalSpatialConfiguration
@@ -38,9 +40,18 @@ import androidx.xr.compose.subspace.layout.height
 import androidx.xr.compose.subspace.layout.movable
 import androidx.xr.compose.subspace.layout.resizable
 import androidx.xr.compose.subspace.layout.width
+import com.example.testimmersiv.data.HlsApi
+import com.example.testimmersiv.data.HlsRepositoryImpl
+import com.example.testimmersiv.domain.HlsRepository
 import com.example.testimmersiv.ui.theme.TestimmersivTheme
+import com.example.testimmersiv.ui.theme.view.HomeView
+import com.example.testimmersiv.ui.theme.view.MainViewModel
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : ComponentActivity() {
+
+
 
     @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,15 +60,27 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             TestimmersivTheme {
+                val viewModel = ViewModelProvider(
+                    this,
+                    object : ViewModelProvider.Factory {
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            return MainViewModel(AppModule.getPostsUseCase) as T
+                        }
+                    }
+                )[MainViewModel::class.java]
                 val spatialConfiguration = LocalSpatialConfiguration.current
                 if (LocalSpatialCapabilities.current.isSpatialUiEnabled) {
                     Subspace {
                         MySpatialContent(
-                            onRequestHomeSpaceMode = spatialConfiguration::requestHomeSpaceMode
+                            onRequestHomeSpaceMode = spatialConfiguration::requestHomeSpaceMode,
+                            viewModel = viewModel
                         )
                     }
                 } else {
-                    My2DContent(onRequestFullSpaceMode = spatialConfiguration::requestFullSpaceMode)
+                    My2DContent(
+                        onRequestFullSpaceMode = spatialConfiguration::requestFullSpaceMode,
+                        viewModel = viewModel
+                    )
                 }
             }
         }
@@ -66,14 +89,10 @@ class MainActivity : ComponentActivity() {
 
 @SuppressLint("RestrictedApi")
 @Composable
-fun MySpatialContent(onRequestHomeSpaceMode: () -> Unit) {
+fun MySpatialContent(onRequestHomeSpaceMode: () -> Unit, viewModel: MainViewModel) {
     SpatialPanel(SubspaceModifier.width(1280.dp).height(800.dp).resizable().movable()) {
         Surface {
-            MainContent(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(48.dp)
-            )
+            HomeView(viewModel)
         }
         Orbiter(
             position = OrbiterEdge.Top,
@@ -91,13 +110,13 @@ fun MySpatialContent(onRequestHomeSpaceMode: () -> Unit) {
 
 @SuppressLint("RestrictedApi")
 @Composable
-fun My2DContent(onRequestFullSpaceMode: () -> Unit) {
+fun My2DContent(onRequestFullSpaceMode: () -> Unit, viewModel: MainViewModel) {
     Surface {
         Row(
             modifier = Modifier.fillMaxSize(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            MainContent(modifier = Modifier.padding(48.dp))
+            HomeView(viewModel)
             if (LocalHasXrSpatialFeature.current) {
                 FullSpaceModeIconButton(
                     onClick = onRequestFullSpaceMode,
@@ -130,14 +149,6 @@ fun HomeSpaceModeIconButton(onClick: () -> Unit, modifier: Modifier = Modifier) 
             painter = painterResource(id = R.drawable.ic_home_space_mode_switch),
             contentDescription = stringResource(R.string.switch_to_home_space_mode)
         )
-    }
-}
-
-@PreviewLightDark
-@Composable
-fun My2dContentPreview() {
-    TestimmersivTheme {
-        My2DContent(onRequestFullSpaceMode = {})
     }
 }
 
