@@ -1,6 +1,7 @@
 package com.example.testimmersiv.ui.theme.view
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,7 +35,7 @@ import com.example.testimmersiv.FullSpaceModeIconButton
 import com.example.testimmersiv.ui.theme.TestimmersivTheme
 
 @Composable
-fun HomeView(viewModel: MainViewModel) {
+fun HomeView(viewModel: MainViewModel, onClick : (String) -> Unit) {
 
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -54,7 +55,12 @@ fun HomeView(viewModel: MainViewModel) {
             ) {
                 items(state.vids) { vid ->
                     Card(
-                        modifier = Modifier.fillMaxWidth(0.5f).padding(vertical = 8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                            .padding(vertical = 8.dp)
+                            .clickable(true, onClick = {
+                                onClick.invoke(vid.url)
+                            }),
                         elevation = CardDefaults.cardElevation(4.dp)
                     ) {
                         Box(

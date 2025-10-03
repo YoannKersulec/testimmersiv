@@ -1,6 +1,7 @@
 package com.example.testimmersiv
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -43,6 +44,7 @@ import androidx.xr.compose.subspace.layout.width
 import com.example.testimmersiv.data.HlsApi
 import com.example.testimmersiv.data.HlsRepositoryImpl
 import com.example.testimmersiv.domain.HlsRepository
+import com.example.testimmersiv.player.PlayerActivity
 import com.example.testimmersiv.ui.theme.TestimmersivTheme
 import com.example.testimmersiv.ui.theme.view.HomeView
 import com.example.testimmersiv.ui.theme.view.MainViewModel
@@ -52,8 +54,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 class MainActivity : ComponentActivity() {
 
 
-
-    @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -69,17 +69,25 @@ class MainActivity : ComponentActivity() {
                     }
                 )[MainViewModel::class.java]
                 val spatialConfiguration = LocalSpatialConfiguration.current
+
+                val clickOnVid : (String) -> Unit = { url ->
+                    val intent = Intent(this@MainActivity, PlayerActivity::class.java)
+                    startActivity(intent)
+                }
+
                 if (LocalSpatialCapabilities.current.isSpatialUiEnabled) {
                     Subspace {
                         MySpatialContent(
                             onRequestHomeSpaceMode = spatialConfiguration::requestHomeSpaceMode,
-                            viewModel = viewModel
+                            viewModel = viewModel,
+                            clickOnVid
                         )
                     }
                 } else {
                     My2DContent(
                         onRequestFullSpaceMode = spatialConfiguration::requestFullSpaceMode,
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        clickOnVid
                     )
                 }
             }
@@ -89,10 +97,10 @@ class MainActivity : ComponentActivity() {
 
 @SuppressLint("RestrictedApi")
 @Composable
-fun MySpatialContent(onRequestHomeSpaceMode: () -> Unit, viewModel: MainViewModel) {
+fun MySpatialContent(onRequestHomeSpaceMode: () -> Unit, viewModel: MainViewModel, onClick: (String) -> Unit) {
     SpatialPanel(SubspaceModifier.width(1280.dp).height(800.dp).resizable().movable()) {
         Surface {
-            HomeView(viewModel)
+            HomeView(viewModel, onClick)
         }
         Orbiter(
             position = OrbiterEdge.Top,
@@ -110,13 +118,13 @@ fun MySpatialContent(onRequestHomeSpaceMode: () -> Unit, viewModel: MainViewMode
 
 @SuppressLint("RestrictedApi")
 @Composable
-fun My2DContent(onRequestFullSpaceMode: () -> Unit, viewModel: MainViewModel) {
+fun My2DContent(onRequestFullSpaceMode: () -> Unit, viewModel: MainViewModel, onClick: (String) -> Unit) {
     Surface {
         Row(
             modifier = Modifier.fillMaxSize(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            HomeView(viewModel)
+            HomeView(viewModel, onClick)
             if (LocalHasXrSpatialFeature.current) {
                 FullSpaceModeIconButton(
                     onClick = onRequestFullSpaceMode,
